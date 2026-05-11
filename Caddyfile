@@ -1,0 +1,47 @@
+# =========================================================
+# Caddyfile — Reverse proxy avec HTTPS automatique
+# =========================================================
+# REMPLACE aif.tondomaine.com par TON domaine réel ci-dessous
+# REMPLACE ton@email.com par TON email (pour Let's Encrypt)
+# =========================================================
+
+{
+    # Email pour les notifications Let's Encrypt (expiration, etc.)
+    email me17kali@gmail.com
+}
+
+aifc01.talent-x.app {
+    # Reverse proxy vers le container Nginx interne
+    reverse_proxy aif-app:80
+
+    # Compression
+    encode gzip zstd
+
+    # Headers de sécurité supplémentaires (HSTS)
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Empêche le clickjacking
+        X-Frame-Options "SAMEORIGIN"
+        # Pas de sniffing MIME
+        X-Content-Type-Options "nosniff"
+        # Politique de référent
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    # Logs (utile pour debug)
+    log {
+        output file /data/access.log {
+            roll_size 10MB
+            roll_keep 3
+        }
+        format console
+    }
+}
+
+# =========================================================
+# OPTIONNEL : redirection www → apex
+# Décommente si tu veux aussi servir www.aif.tondomaine.com
+# =========================================================
+# www.aif.tondomaine.com {
+#     redir https://aif.tondomaine.com{uri} permanent
+# }

@@ -1,0 +1,41 @@
+services:
+  # ==========================================
+  # Caddy : reverse proxy + HTTPS automatique
+  # Let's Encrypt géré tout seul, magique 🪄
+  # ==========================================
+  caddy:
+    image: caddy:2-alpine
+    container_name: aif-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - aif-network
+    depends_on:
+      - aif-app
+
+  # ==========================================
+  # App AIF-C01 : Nginx servant le build React
+  # ==========================================
+  aif-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aif-app
+    restart: unless-stopped
+    networks:
+      - aif-network
+    # Pas de port exposé en externe — accès uniquement via Caddy
+
+networks:
+  aif-network:
+    driver: bridge
+
+volumes:
+  caddy_data:    # Stocke les certificats Let's Encrypt
+  caddy_config:
