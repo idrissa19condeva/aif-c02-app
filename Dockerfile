@@ -1,7 +1,7 @@
 # =========================================
 # Stage 1 — Build l'app React avec Vite
 # =========================================
-FROM node:20-alpine AS builder
+FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 ENV NODE_ENV=development
