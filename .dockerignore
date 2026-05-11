@@ -11,5 +11,4 @@ dist
 Dockerfile
 docker-compose.yml
 Caddyfile
-nginx.conf
 deploy.sh
