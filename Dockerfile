@@ -4,14 +4,15 @@
 FROM node:20-alpine AS builder
 
 WORKDIR /app
+ENV NODE_ENV=development
 
 # Copie des fichiers de dépendances pour optimiser le cache Docker
 COPY package*.json ./
-RUN npm ci --include=dev
+RUN npm ci --include=dev && test -x node_modules/.bin/vite
 
 # Copie du reste du code source et build
 COPY . .
-RUN npm run build
+RUN npm exec vite build
 
 # =========================================
 # Stage 2 — Servir avec Nginx Alpine
