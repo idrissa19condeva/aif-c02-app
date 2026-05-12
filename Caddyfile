@@ -12,8 +12,9 @@
 }
 
 aif.talent-x.app {
-    # Reverse proxy vers le container Nginx interne
-    reverse_proxy aif-app:80
+    # Reverse proxy vers aif-app exposé sur localhost:8080 par docker-compose
+    # (Caddy tourne en network_mode: host, donc localhost = host)
+    reverse_proxy 127.0.0.1:8080
 
     # Compression
     encode gzip zstd
