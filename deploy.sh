@@ -35,6 +35,12 @@ for file in "${required_files[@]}"; do
     fi
 done
 
+# Vérifier que node_modules est présent (requis pour le build Docker)
+if [ ! -x "node_modules/.bin/vite" ]; then
+    echo -e "${YELLOW}📦 node_modules absent — installation en cours...${NC}"
+    npm ci --include=dev --no-audit --no-fund
+fi
+
 # Avertir si le Caddyfile contient encore le domaine placeholder
 if grep -q "aif.tondomaine.com" Caddyfile; then
     echo -e "${YELLOW}⚠️  Le Caddyfile contient encore 'aif.tondomaine.com'.${NC}"

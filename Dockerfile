@@ -5,14 +5,13 @@ FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 ENV NODE_ENV=development
-ENV NODE_OPTIONS="--max-old-space-size=512"
 
-# Copie des fichiers de dépendances pour optimiser le cache Docker
-COPY package.json package-lock.json ./
-RUN npm ci --include=dev --no-audit --no-fund && test -x node_modules/.bin/vite
-
-# Copie du reste du code source et build
+# Copie de tout le projet (node_modules inclus depuis le contexte local)
+# Prérequis : avoir exécuté "npm ci" en local avant de builder l'image
 COPY . .
+RUN test -x node_modules/.bin/vite || (echo "ERROR: node_modules manquant — lance 'npm ci' en local d'abord" && exit 1)
+
+# Build de production
 RUN npm exec vite build
 
 # =========================================
