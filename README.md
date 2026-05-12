@@ -1,4 +1,4 @@
-# 📱 Déploiement AIF-C01 Exam App sur VPS OVH
+# 📱 Déploiement AIF-C02 Exam App sur VPS OVH
 
 Déploiement Docker propre avec HTTPS automatique (Let's Encrypt via Caddy).
 
@@ -15,7 +15,7 @@ Déploiement Docker propre avec HTTPS automatique (Let's Encrypt via Caddy).
 ## 📦 Structure des fichiers
 
 ```
-aif-c01-app/                  ← Ton projet Vite/React
+aif-c02-app/                  ← Ton projet Vite/React
 ├── src/
 │   └── App.jsx               ← Le code de l'app (fichier que je t'ai livré)
 ├── public/
@@ -37,8 +37,8 @@ aif-c01-app/                  ← Ton projet Vite/React
 ### Étape 1 — En local : créer et tester l'app
 
 ```bash
-npm create vite@latest aif-c01-app -- --template react
-cd aif-c01-app
+npm create vite@latest aif-c02-app -- --template react
+cd aif-c02-app
 npm install
 npm install lucide-react recharts papaparse
 ```
@@ -99,26 +99,26 @@ sudo ufw enable
 **Option A — via Git (recommandé) :**
 ```bash
 # Push ton projet sur GitHub/GitLab puis sur le VPS :
-git clone https://github.com/tonuser/aif-c01-app.git
-cd aif-c01-app
+git clone https://github.com/tonuser/aif-c02-app.git
+cd aif-c02-app
 ```
 
 **Option B — via rsync depuis ta machine locale :**
 ```bash
 rsync -avz --exclude 'node_modules' --exclude 'dist' \
-  ./aif-c01-app/ ton_user@IP_DU_VPS:~/aif-c01-app/
+  ./aif-c02-app/ ton_user@IP_DU_VPS:~/aif-c02-app/
 ```
 
 **Option C — via scp :**
 ```bash
-scp -r ./aif-c01-app ton_user@IP_DU_VPS:~/
+scp -r ./aif-c02-app ton_user@IP_DU_VPS:~/
 ```
 
 ### Étape 6 — Déployer 🚀
 
 Sur le VPS :
 ```bash
-cd aif-c01-app
+cd aif-c02-app
 chmod +x deploy.sh
 ./deploy.sh
 ```
@@ -198,7 +198,7 @@ docker compose exec caddy sh
 git add . && git commit -m "update" && git push
 
 # 2. Sur le VPS :
-cd aif-c01-app
+cd aif-c02-app
 git pull
 ./deploy.sh
 ```
@@ -217,7 +217,7 @@ Container qui surveille et met à jour automatiquement les images.
 
 ### Backup des données Caddy (certificats)
 ```bash
-docker run --rm -v aif-c01-app_caddy_data:/data -v $(pwd):/backup \
+docker run --rm -v aif-c02-app_caddy_data:/data -v $(pwd):/backup \
   alpine tar czf /backup/caddy-backup.tar.gz /data
 ```
 

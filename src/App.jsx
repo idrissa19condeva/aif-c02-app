@@ -166,6 +166,8 @@ export default function App() {
     textMuted: '#737373', accent: '#FF6600', accentH: '#ff8533', glassBg: 'rgba(0,0,0,0.02)'
   }, [isDark]);
 
+  const finishQuiz = useCallback(() => setScreen('results'), []);
+
   // Timer
   useEffect(() => {
     if (screen !== 'quiz' || !timerEnabled || isPaused || timeLeft <= 0) return;
@@ -176,7 +178,40 @@ export default function App() {
       });
     }, 1000);
     return () => clearInterval(t);
-  }, [screen, timerEnabled, isPaused, timeLeft]);
+  }, [screen, timerEnabled, isPaused, timeLeft, finishQuiz]);
+
+  const startQuiz = () => {
+    const pool = questions.filter(q => selectedDomains.includes(q.d));
+    if (pool.length === 0) return;
+    const n = Math.min(numQuestions, pool.length);
+    const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, n);
+    setQuiz(shuffled); setCurrentIdx(0); setAnswers({}); setSelectedAnswer(null);
+    setRevealed(false); setTimeLeft(timerDuration * 60); setIsPaused(false);
+    setStreak(0); setMaxStreak(0); setScreen('quiz');
+  };
+
+  const goNext = useCallback(() => {
+    setCurrentIdx(prev => {
+      if (!quiz || prev + 1 >= quiz.length) { finishQuiz(); return prev; }
+      return prev + 1;
+    });
+    setSelectedAnswer(null);
+    setRevealed(false);
+  }, [quiz, finishQuiz]);
+
+  const submitAnswer = useCallback(() => {
+    if (selectedAnswer === null) return;
+    const q = quiz[currentIdx];
+    const correct = selectedAnswer === q.a;
+    setAnswers(prev => ({ ...prev, [q.i]: selectedAnswer }));
+    if (correct) {
+      setStreak(s => { const ns = s + 1; setMaxStreak(m => Math.max(m, ns)); return ns; });
+    } else {
+      setStreak(0);
+    }
+    if (mode === 'training') setRevealed(true);
+    else goNext();
+  }, [selectedAnswer, quiz, currentIdx, mode, goNext]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -195,40 +230,7 @@ export default function App() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [screen, revealed, selectedAnswer, timerEnabled]);
-
-  const startQuiz = () => {
-    const pool = questions.filter(q => selectedDomains.includes(q.d));
-    if (pool.length === 0) return;
-    const n = Math.min(numQuestions, pool.length);
-    const shuffled = [...pool].sort(() => Math.random() - 0.5).slice(0, n);
-    setQuiz(shuffled); setCurrentIdx(0); setAnswers({}); setSelectedAnswer(null);
-    setRevealed(false); setTimeLeft(timerDuration * 60); setIsPaused(false);
-    setStreak(0); setMaxStreak(0); setScreen('quiz');
-  };
-
-  const submitAnswer = () => {
-    if (selectedAnswer === null) return;
-    const q = quiz[currentIdx];
-    const correct = selectedAnswer === q.a;
-    setAnswers(prev => ({ ...prev, [q.i]: selectedAnswer }));
-    if (correct) {
-      const newStreak = streak + 1;
-      setStreak(newStreak);
-      setMaxStreak(Math.max(maxStreak, newStreak));
-    } else {
-      setStreak(0);
-    }
-    if (mode === 'training') setRevealed(true);
-    else goNext(correct);
-  };
-
-  const goNext = (skipFeedback = false) => {
-    if (currentIdx + 1 >= quiz.length) finishQuiz();
-    else { setCurrentIdx(currentIdx + 1); setSelectedAnswer(null); setRevealed(false); }
-  };
-
-  const finishQuiz = () => setScreen('results');
+  }, [screen, revealed, selectedAnswer, timerEnabled, goNext, submitAnswer]);
 
   const resetAll = () => {
     setScreen('home'); setQuiz(null); setCurrentIdx(0); setAnswers({});

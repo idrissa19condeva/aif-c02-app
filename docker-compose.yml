@@ -20,7 +20,7 @@ services:
       - aif-app
 
   # ==========================================
-  # App AIF-C01 : Nginx servant le build React
+  # App AIF-C02 : Nginx servant le build React
   # ==========================================
   aif-app:
     build:

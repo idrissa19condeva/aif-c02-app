@@ -11,7 +11,7 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-echo -e "${GREEN}🚀 Déploiement AIF-C01 Exam App${NC}"
+echo -e "${GREEN}🚀 Déploiement AIF-C02 Exam App${NC}"
 
 # Vérifier que Docker est installé
 if ! command -v docker &> /dev/null; then

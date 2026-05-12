@@ -7,8 +7,8 @@ WORKDIR /app
 ENV NODE_ENV=development
 
 # Copie des fichiers de dépendances pour optimiser le cache Docker
-COPY package.json ./
-RUN npm install --include=dev --no-audit --no-fund && test -x node_modules/.bin/vite
+COPY package.json package-lock.json ./
+RUN npm ci --include=dev --no-audit --no-fund && test -x node_modules/.bin/vite
 
 # Copie du reste du code source et build
 COPY . .
