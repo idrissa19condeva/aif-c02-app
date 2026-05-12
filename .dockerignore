@@ -1,4 +1,6 @@
-node_modules
+# node_modules inclus intentionnellement dans le contexte pour éviter
+# npm install en réseau lors du build Docker (réseau souvent lent/bloqué en CI)
+# Lancer "npm ci" localement avant "docker compose build"
 dist
 .git
 .gitignore
