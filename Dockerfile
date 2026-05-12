@@ -5,6 +5,7 @@ FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
 ENV NODE_ENV=development
+ENV NODE_OPTIONS="--max-old-space-size=512"
 
 # Copie des fichiers de dépendances pour optimiser le cache Docker
 COPY package.json package-lock.json ./
