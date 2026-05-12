@@ -5,99 +5,10 @@ import {
   TrendingUp, Eye, EyeOff, Pause, Award, BarChart3, Zap,
   Flame, Keyboard, Settings2, Sun, Moon, Upload, FileText, X
 } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, Tooltip, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import Papa from 'papaparse';
+import { DEFAULT_QUESTIONS } from './questions';
 
-// ============================================================
-// 75 QUESTIONS EMBARQUÉES (15 par domaine × 5 domaines)
-// Tu peux importer les 5 CSV pour atteindre 250 questions
-// ============================================================
-const DEFAULT_QUESTIONS = [
-  // D1 — Fondamentaux IA/ML
-  {i:'D1-001',d:1,df:'e',q:"Relation entre IA, Machine Learning et Deep Learning ?",o:["Le ML englobe l'IA et le DL","IA et ML équivalents au DL","Le DL est un sous-ensemble du ML, lui-même sous-ensemble de l'IA","Trois domaines indépendants"],a:2,e:"Hiérarchie : IA ⊃ ML ⊃ DL. Le DL utilise des réseaux de neurones profonds.",s:"-"},
-  {i:'D1-002',d:1,df:'e',q:"Banque avec emails étiquetés spam/légitime → classifieur. Quel apprentissage ?",o:["Supervisé (données étiquetées)","Non supervisé","Renforcement","Auto-encodage"],a:0,e:"Apprentissage supervisé = exemples étiquetés (entrée → sortie connue).",s:"Amazon SageMaker"},
-  {i:'D1-003',d:1,df:'e',q:"Regrouper 1M de clients en segments similaires, sans catégories préalables.",o:["Renforcement","Clustering (non supervisé)","Supervisé","Régression"],a:1,e:"Clustering = apprentissage non supervisé, groupe sans étiquettes.",s:"Amazon SageMaker"},
-  {i:'D1-004',d:1,df:'e',q:"Prédire le prix exact d'une maison à partir de caractéristiques.",o:["Classification binaire","Clustering","Régression","Détection d'anomalies"],a:2,e:"Régression = prédire une valeur numérique continue.",s:"Amazon SageMaker"},
-  {i:'D1-005',d:1,df:'e',q:"Analyser images/vidéos (objets, visages, modération) sans entraîner de modèle.",o:["Amazon Rekognition","Amazon Polly","Amazon Transcribe","Amazon Macie"],a:0,e:"Rekognition = analyse d'images/vidéos avec modèles pré-entraînés.",s:"Amazon Rekognition"},
-  {i:'D1-006',d:1,df:'e',q:"Analyser le sentiment de milliers d'avis clients en plusieurs langues.",o:["Amazon Translate","Amazon Polly","Amazon Lex","Amazon Comprehend"],a:3,e:"Comprehend = service NLP managé : sentiment, entités, sujets, classification.",s:"Amazon Comprehend"},
-  {i:'D1-007',d:1,df:'e',q:"Extraire texte, tableaux et formulaires de documents scannés.",o:["Amazon Comprehend","Amazon Translate","Amazon Textract","Amazon Rekognition"],a:2,e:"Textract va au-delà de l'OCR : structure (tableaux, formulaires).",s:"Amazon Textract"},
-  {i:'D1-008',d:1,df:'e',q:"Convertir texte en parole naturelle (TTS) avec voix neuronales.",o:["Amazon Transcribe","Amazon Polly","Amazon Lex","Amazon Comprehend"],a:1,e:"Polly = Text-to-Speech. Transcribe fait l'inverse (STT).",s:"Amazon Polly"},
-  {i:'D1-009',d:1,df:'e',q:"Plateforme ML managée end-to-end pour modèles personnalisés.",o:["Amazon Bedrock","AWS Glue","Amazon SageMaker","Amazon EMR"],a:2,e:"SageMaker = cycle ML complet : préparation, entraînement, déploiement, monitoring.",s:"Amazon SageMaker"},
-  {i:'D1-010',d:1,df:'m',q:"Différence principale entre SageMaker et Bedrock ?",o:["Bedrock est l'ancienne version","SageMaker construit/entraîne des modèles custom, Bedrock donne accès à des FMs pré-entraînés via API","Mêmes services","SageMaker pour l'image, Bedrock pour le texte"],a:1,e:"SageMaker = ML custom. Bedrock = FMs managés via API.",s:"SageMaker / Bedrock"},
-  {i:'D1-011',d:1,df:'m',q:"Modèle à 99% sur entraînement et 60% sur test. Phénomène ?",o:["Underfitting","Data leak","Overfitting","Convergence parfaite"],a:2,e:"Overfitting : le modèle mémorise le bruit. Remèdes : régularisation, plus de données.",s:"Amazon SageMaker"},
-  {i:'D1-012',d:1,df:'m',q:"Pour détection de cancer (priorité : ne manquer aucun cas positif), métrique ?",o:["Precision","Recall (rappel)","Specificity","Latency"],a:1,e:"Recall = TP/(TP+FN) : minimise les faux négatifs, critique en médecine.",s:"Amazon SageMaker"},
-  {i:'D1-013',d:1,df:'m',q:"Prédictions à très faible latence en temps réel via API HTTPS.",o:["Batch Transform","Async inference","Notebook seul","Real-time inference endpoint"],a:3,e:"Real-time endpoint = API persistante avec autoscaling.",s:"Amazon SageMaker"},
-  {i:'D1-014',d:1,df:'m',q:"Détecter dérive (data drift, model drift) des modèles en production.",o:["SageMaker Pipelines","CloudTrail","JumpStart","SageMaker Model Monitor"],a:3,e:"Model Monitor surveille les endpoints et alerte en cas de dérive.",s:"SageMaker Model Monitor"},
-  {i:'D1-015',d:1,df:'m',q:"Étiqueter des données via workforce humain et auto-labeling.",o:["SageMaker Studio","Amazon Comprehend","Amazon Bedrock","SageMaker Ground Truth"],a:3,e:"Ground Truth aide à créer des datasets étiquetés pour le supervised learning.",s:"SageMaker Ground Truth"},
-
-  // D2 — Fondamentaux IA générative
-  {i:'D2-001',d:2,df:'e',q:"Qu'est-ce qu'un foundation model ?",o:["Modèle entraîné sur un seul domaine","Modèle de grande taille pré-entraîné sur vaste corpus, adaptable à de nombreuses tâches","Réservé au matériel quantique","Bibliothèque pour chercheurs"],a:1,e:"FMs (GPT, Claude, Llama, Titan, Nova) pré-entraînés puis adaptés.",s:"Amazon Bedrock"},
-  {i:'D2-002',d:2,df:'e',q:"Que signifie LLM ?",o:["Long Latency Model","Light Language Model","Linear Learning Machine","Large Language Model"],a:3,e:"LLM = Large Language Model. Plusieurs milliards de paramètres.",s:"Amazon Bedrock"},
-  {i:'D2-003',d:2,df:'e',q:"Unité de base manipulée par un LLM pour le texte ?",o:["Le token (mot ou sous-mot)","Le bit","Le pixel","La page"],a:0,e:"Tokenizer découpe le texte en tokens. Facturation au token.",s:"Amazon Bedrock"},
-  {i:'D2-004',d:2,df:'m',q:"Un embedding représente :",o:["Format de stockage des poids","Fonction de coût","Représentation vectorielle numérique capturant la sémantique","Type d'optimiseur"],a:2,e:"Embeddings = vecteurs denses placés selon similarité sémantique.",s:"Titan Embeddings"},
-  {i:'D2-005',d:2,df:'e',q:"Paramètre contrôlant l'aléa/créativité des réponses LLM ?",o:["max_tokens","batch_size","stop_sequences","temperature"],a:3,e:"Temperature proche de 0 = déterministe ; proche de 1 = créatif.",s:"Amazon Bedrock"},
-  {i:'D2-006',d:2,df:'m',q:"Le paramètre top_p (nucleus sampling) :",o:["Définit le nb de tokens de sortie","Choisit la version du modèle","Limite l'échantillonnage aux tokens dont la probabilité cumulée atteint p","Active le streaming"],a:2,e:"top_p=0.9 : garde les tokens cumulant 90% de probabilité.",s:"Amazon Bedrock"},
-  {i:'D2-007',d:2,df:'m',q:"Context window d'un LLM désigne :",o:["Interface graphique","Temps maximal de réponse","Nombre maximal de tokens (input+output) traitables en une requête","Taille du modèle en GB"],a:2,e:"De qq milliers à plusieurs millions de tokens selon les modèles.",s:"Amazon Bedrock"},
-  {i:'D2-008',d:2,df:'e',q:"LLM répond une info factuellement fausse avec assurance. Phénomène ?",o:["Overfitting","Hallucination","Token leakage","Bias drift"],a:1,e:"Hallucinations = limite majeure des LLMs. Mitigation : RAG, Guardrails.",s:"Bedrock Guardrails"},
-  {i:'D2-009',d:2,df:'e',q:"Question sans aucun exemple = approche...",o:["Chain-of-thought","Few-shot","Reinforcement","Zero-shot"],a:3,e:"Zero-shot = aucun exemple. Few-shot = quelques exemples.",s:"Amazon Bedrock"},
-  {i:'D2-010',d:2,df:'e',q:"Inclure 3-10 exemples dans le prompt =",o:["Fine-tuning","Pre-training","Few-shot prompting (in-context learning)","RAG"],a:2,e:"Few-shot guide le modèle sur format/style attendu sans réentraîner.",s:"Amazon Bedrock"},
-  {i:'D2-011',d:2,df:'m',q:"Expliciter le raisonnement étape par étape =",o:["Token streaming","Output filtering","Continuous pretraining","Chain-of-thought (CoT)"],a:3,e:"CoT améliore drastiquement les tâches de raisonnement.",s:"Amazon Bedrock"},
-  {i:'D2-012',d:2,df:'m',q:"Modèle multimodal peut :",o:["Uniquement du texte","Traiter plusieurs types : texte + image + audio/vidéo","Uniquement plusieurs langues","Tourner sur matériel spécifique"],a:1,e:"Multimodaux : Claude 3 vision, Nova, GPT-4o, Gemini.",s:"Amazon Bedrock"},
-  {i:'D2-013',d:2,df:'m',q:"Technologie sous Titan Image Generator / Stable Diffusion ?",o:["Arbres de décision","ARIMA","K-Means","Modèles de diffusion (débruitage itératif d'un bruit)"],a:3,e:"Diffusion models : débruitage progressif guidé par le prompt.",s:"Amazon Bedrock"},
-  {i:'D2-014',d:2,df:'m',q:"Famille Amazon Titan inclut :",o:["Uniquement vidéo","Modèles texte, image et embeddings AWS","Uniquement open source","Une seule taille"],a:1,e:"Titan : Titan Text, Titan Embeddings, Titan Image Generator.",s:"Amazon Titan"},
-  {i:'D2-015',d:2,df:'m',q:"Comment combler le knowledge cutoff d'un FM ?",o:["Réentraîner chaque jour","Accepter qu'il ne soit jamais à jour","Désactiver","RAG ou agent capable d'appeler des outils/APIs externes"],a:3,e:"RAG et agents = approches standards pour info à jour.",s:"Bedrock Knowledge Bases"},
-
-  // D3 — Applications des FMs
-  {i:'D3-001',d:3,df:'e',q:"Proposition de valeur d'Amazon Bedrock ?",o:["Stocker des bases vectorielles","Accès via API unique à plusieurs FMs sans gérer d'infra","Remplacer SageMaker","Uniquement Titan"],a:1,e:"Bedrock = serverless, plusieurs FMs (Anthropic, Meta, Mistral, AI21, Cohere, Amazon, Stability) via API REST.",s:"Amazon Bedrock"},
-  {i:'D3-002',d:3,df:'m',q:"Modèles de tarification Bedrock :",o:["On-demand (au token) + Provisioned Throughput + Batch inference","Uniquement gratuit","Uniquement annuel","Uniquement spot"],a:0,e:"On-demand variable, Provisioned constant, Batch en différé (-50%).",s:"Amazon Bedrock"},
-  {i:'D3-003',d:3,df:'m',q:"Le RAG consiste à :",o:["Réentraîner quotidiennement","Désactiver les paramètres","Récupérer du contexte pertinent et l'injecter dans le prompt avant la génération","Compresser le modèle"],a:2,e:"RAG ancre le LLM sur des sources externes sans réentraîner.",s:"Bedrock Knowledge Bases"},
-  {i:'D3-004',d:3,df:'m',q:"Le RAG est PARTICULIÈREMENT adapté quand :",o:["On veut modifier le style","Connaissances changent souvent, confidentielles, ou volumineuses","Réduire les hallucinations en ancrant sur des sources","B et C"],a:3,e:"RAG résout : fraîcheur, confidentialité, ancrage anti-hallucination.",s:"Bedrock Knowledge Bases"},
-  {i:'D3-005',d:3,df:'m',q:"Le fine-tuning d'un FM est JUSTIFIÉ pour :",o:["Adapter style/ton/format avec un dataset étiqueté représentatif","Apprendre des faits qui changent","Éviter un FM","Réduire la gestion"],a:0,e:"Fine-tuning = spécialiser sur style/format. Connaissance évolutive → préférer RAG.",s:"Amazon Bedrock"},
-  {i:'D3-006',d:3,df:'m',q:"Hiérarchie de personnalisation FM (moins au plus coûteux) :",o:["Prompt eng → RAG → Fine-tuning → Continued pretraining → From scratch","From scratch → Fine-tuning → RAG → Prompt","Toujours fine-tuning","Toujours from scratch"],a:0,e:"Règle d'or AWS : commencer par la solution la plus simple.",s:"Amazon Bedrock"},
-  {i:'D3-007',d:3,df:'e',q:"Bedrock Knowledge Bases permet :",o:["IAM","Pipeline RAG managé : ingestion, chunking, embeddings, stockage, recherche","Stocker des modèles fine-tunés","Remplacer S3"],a:1,e:"Knowledge Bases automatise toute la chaîne RAG.",s:"Bedrock Knowledge Bases"},
-  {i:'D3-008',d:3,df:'m',q:"Vector stores supportés par Bedrock Knowledge Bases :",o:["Uniquement DynamoDB","Uniquement S3","Aucune option","OpenSearch Serverless, Aurora (pgvector), Pinecone, Redis, MongoDB Atlas, Neptune Analytics"],a:3,e:"Choix selon latence, coût, features (hybrid search).",s:"Bedrock Knowledge Bases"},
-  {i:'D3-009',d:3,df:'e',q:"Rôle principal de Bedrock Agents ?",o:["Stocker embeddings","Gérer SSL","Orchestrer des actions multi-étapes : appeler outils/APIs via Lambda","Compresser"],a:2,e:"Agents : décomposition, appels d'outils, raisonnement multi-étapes.",s:"Bedrock Agents"},
-  {i:'D3-010',d:3,df:'e',q:"Amazon Q Business est :",o:["Stockage","Assistant IA générative pour entreprises, connecté aux apps métier, respectant les ACL","Monitoring","DNS"],a:1,e:"Q Business hérite des permissions de chaque source connectée.",s:"Amazon Q Business"},
-  {i:'D3-011',d:3,df:'e',q:"Amazon Q Developer aide les développeurs à :",o:["Marketing","Prévision","Facturation","Écrire/expliquer/déboguer du code, scanner les vulnérabilités, moderniser"],a:3,e:"Q Developer = ex-CodeWhisperer, intégré VS Code, JetBrains, console AWS.",s:"Amazon Q Developer"},
-  {i:'D3-012',d:3,df:'m',q:"Pour des réponses FACTUELLES et déterministes (extraction structurée) :",o:["Temperature max","Temperature proche de 0 et top_p restrictif","Désactiver l'inférence","Doubler max_tokens"],a:1,e:"Tâches déterministes : T 0-0.2, top_p 0.1-0.5.",s:"Amazon Bedrock"},
-  {i:'D3-013',d:3,df:'m',q:"Pour des réponses créatives (brainstorming, slogans) :",o:["Temperature 0.8 + top_p permissif","Temperature à 0","Désactiver tous les paramètres","max_tokens à 1"],a:0,e:"Temperature élevée (0.7-1) + top_p élevé maximisent la diversité.",s:"Amazon Bedrock"},
-  {i:'D3-014',d:3,df:'m',q:"Tool use (function calling) permet :",o:["Au modèle d'appeler une fonction/API externe avec arguments structurés","Désactiver le modèle","Compresser","Lire le billing"],a:0,e:"Tool use rend les LLMs actionnables (calculatrice, DB, API).",s:"Amazon Bedrock"},
-  {i:'D3-015',d:3,df:'m',q:"Approche recommandée pour développer une app gen AI :",o:["Tout fine-tuner","From scratch","Itérer : prompt eng → RAG si besoin → fine-tuning si style spécifique","Que des modèles propriétaires"],a:2,e:"Approche incrémentale : évaluer à chaque étape, complexifier si nécessaire.",s:"Amazon Bedrock"},
-
-  // D4 — IA responsable
-  {i:'D4-001',d:4,df:'m',q:"Dimensions de l'IA responsable selon AWS :",o:["Fairness, Explainability, Privacy & Security, Safety, Controllability, Veracity, Governance, Transparency","Coût et performance uniquement","Vitesse","Aucune dimension"],a:0,e:"AWS publie 8 dimensions de l'IA responsable.",s:"AWS Responsible AI"},
-  {i:'D4-002',d:4,df:'e',q:"La fairness en IA signifie :",o:["Modèle gratuit","Traite équitablement les groupes sans discriminer injustement","Rapide","Open source"],a:1,e:"Fairness = éviter qu'un modèle pénalise certains groupes sans raison.",s:"SageMaker Clarify"},
-  {i:'D4-003',d:4,df:'e',q:"SageMaker Clarify aide à :",o:["Compresser","Déployer","Détecter biais (pré/post entraînement), expliquer prédictions (SHAP), monitorer biais en prod","IAM"],a:2,e:"Clarify : fairness, explicability (SHAP). Référence AWS XAI.",s:"SageMaker Clarify"},
-  {i:'D4-004',d:4,df:'m',q:"Valeurs SHAP permettent :",o:["Compresser","IAM","Sauvegarde","Score d'importance de chaque feature dans une prédiction, basé sur la théorie des jeux"],a:3,e:"SHAP = référence pour l'explicabilité. Intégré dans SageMaker Clarify.",s:"SageMaker Clarify"},
-  {i:'D4-005',d:4,df:'m',q:"SageMaker Model Cards permettent :",o:["Documenter les modèles (usage prévu, dataset, métriques, limitations, éthique) pour transparence et gouvernance","Stocker images","Déployer","Compresser"],a:0,e:"Model Cards = fiches de gouvernance essentielles pour AI Act, audits.",s:"SageMaker Model Cards"},
-  {i:'D4-006',d:4,df:'m',q:"AWS AI Service Cards sont :",o:["Cartes physiques","Fiches de paie","Cartes de crédit","Fiches publiques AWS documentant usage, perfs, limites et considérations responsables des services AI"],a:3,e:"Disponibles pour Rekognition Face Matching, Textract AnalyzeID, etc.",s:"AWS AI Service Cards"},
-  {i:'D4-007',d:4,df:'e',q:"Bedrock Guardrails fournit :",o:["Couche centralisée de safety : content filters, denied topics, word filters, PII, contextual grounding","Backup","DNS","CDN"],a:0,e:"Guardrails applicable à plusieurs FMs via API ApplyGuardrail.",s:"Bedrock Guardrails"},
-  {i:'D4-008',d:4,df:'m',q:"Content filters de Bedrock Guardrails couvrent :",o:["Orthographe","Aucune catégorie","Hate, Insults, Sexual, Violence, Misconduct, Prompt attacks (niveaux low/medium/high)","Grammaire"],a:2,e:"6 catégories avec niveaux réglables sur prompt et response.",s:"Bedrock Guardrails"},
-  {i:'D4-009',d:4,df:'m',q:"Sensitive information filter de Guardrails :",o:["Augmente le coût","Désactive","Détecte/masque les PII (cartes, SSN, emails, IP) + regex personnalisés","Compresse"],a:2,e:"Protège contre la divulgation accidentelle de données personnelles.",s:"Bedrock Guardrails"},
-  {i:'D4-010',d:4,df:'m',q:"Contextual grounding check de Guardrails :",o:["Vérifie que la réponse est ancrée dans le contexte fourni (RAG) et pertinente, pour réduire les hallucinations","Orthographe","JSON","Coût"],a:0,e:"Contextual grounding : grounding (ancrage) + relevance (pertinence).",s:"Bedrock Guardrails"},
-  {i:'D4-011',d:4,df:'m',q:"Stratégies pour réduire les hallucinations :",o:["Temperature au max","Ignorer","Aucune","RAG + contextual grounding + citations + validation humaine + prompts contraints"],a:3,e:"Approche en couches : grounding + validation + monitoring.",s:"Bedrock Guardrails"},
-  {i:'D4-012',d:4,df:'m',q:"Amazon Augmented AI (A2I) :",o:["Compresse","Workflow de revue humaine pour prédictions à faible confiance ou cas sensibles","Latence","IAM"],a:1,e:"A2I = HITL automatisé avec routage selon règles.",s:"Amazon A2I"},
-  {i:'D4-013',d:4,df:'m',q:"HITL (human-in-the-loop) particulièrement pertinent pour :",o:["Tâches triviales","Aucun cas","Économies en supprimant les humains","Décisions à fort impact (médical, juridique, RH, prêt) ou prédictions à faible confiance"],a:3,e:"HITL combine rapidité IA + discernement humain pour cas critiques.",s:"Amazon A2I"},
-  {i:'D4-014',d:4,df:'e',q:"Le droit à l'explication (RGPD) signifie :",o:["Droit d'obtenir une explication compréhensible d'une décision automatisée significative","Droit de ne pas être expliqué","Droit de désactiver","Droit au remboursement"],a:0,e:"Article 22 RGPD. Outils XAI (SHAP, LIME) aident à respecter ce droit.",s:"AWS Responsible AI"},
-  {i:'D4-015',d:4,df:'e',q:"L'IA responsable est :",o:["Voyage continu : évaluation, monitoring, audits, formations, gouvernance évolutive","Case à cocher","Contrainte","Sujet technique"],a:0,e:"L'IA responsable est une démarche continue intégrée au cycle de vie.",s:"AWS Responsible AI"},
-
-  // D5 — Sécurité, conformité, gouvernance
-  {i:'D5-001',d:5,df:'m',q:"Modèle de responsabilité partagée AWS appliqué à Bedrock :",o:["AWS gère l'infra et la sécurité de l'infra ; le client gère ses données, IAM, Guardrails","AWS gère tout","Le client gère l'infrastructure des modèles","Pas de modèle partagé"],a:0,e:"AWS = infra/runtime des modèles. Client = données/accès/configs.",s:"AWS Shared Responsibility"},
-  {i:'D5-002',d:5,df:'m',q:"Autoriser un user à invoquer un FM précis sur Bedrock :",o:["Droits admin","Désactiver IAM","Policy IAM avec bedrock:InvokeModel limitée au modelArn","Partager les clés root"],a:2,e:"IAM permet scope par modelArn et conditions (tags, VPC source).",s:"AWS IAM"},
-  {i:'D5-003',d:5,df:'e',q:"Principe du moindre privilège :",o:["Donner tous les droits","N'accorder que les permissions strictement nécessaires","Désactiver IAM","Stocker clés en clair"],a:1,e:"Least privilege = pilier du Well-Architected (Security).",s:"AWS IAM"},
-  {i:'D5-004',d:5,df:'m',q:"VPC privé invoquant Bedrock SANS Internet :",o:["EC2 publique avec proxy","Désactiver le pare-feu","Direct Connect seul","VPC interface endpoint pour Bedrock (PrivateLink)"],a:3,e:"PrivateLink maintient le trafic sur le réseau AWS.",s:"AWS PrivateLink"},
-  {i:'D5-005',d:5,df:'m',q:"Confidentialité des données client sur Bedrock :",o:["Prompts partagés avec d'autres clients","Publiés sur Marketplace","Prompts/personnalisation NE SONT PAS utilisés pour entraîner les FMs et NE SONT PAS partagés avec les fournisseurs","AWS utilise les données par défaut"],a:2,e:"Garantie clé de Bedrock : isolation des données client.",s:"Amazon Bedrock"},
-  {i:'D5-006',d:5,df:'m',q:"Chiffrer les données Bedrock avec des clés client-managed :",o:["AWS KMS avec Customer Managed Keys (CMK)","AWS Shield","AWS WAF","Amazon Inspector"],a:0,e:"KMS CMK = contrôle accru (rotation, audit, accès).",s:"AWS KMS"},
-  {i:'D5-007',d:5,df:'e',q:"Auditer qui a invoqué quel modèle sur Bedrock :",o:["AWS Shield","AWS Backup","AWS CloudTrail","Amazon CloudFront"],a:2,e:"CloudTrail = journalisation des appels API. Base de l'auditabilité.",s:"AWS CloudTrail"},
-  {i:'D5-008',d:5,df:'m',q:"Pour journaliser prompts/complétions Bedrock dans S3/CloudWatch :",o:["Activer Bedrock model invocation logging","Désactiver le chiffrement","Augmenter temperature","Désactiver IAM"],a:0,e:"Invocation logging Bedrock = essentiel pour traçabilité et conformité.",s:"Amazon Bedrock"},
-  {i:'D5-009',d:5,df:'e',q:"Amazon Macie permet de :",o:["Détecter automatiquement PII/secrets/données sensibles dans S3 via ML","Compresser des modèles","Augmenter temperature","Entraîner des FMs"],a:0,e:"Macie = découverte de données sensibles dans S3. Crucial avant fine-tuning.",s:"Amazon Macie"},
-  {i:'D5-010',d:5,df:'m',q:"AWS Audit Manager aide à :",o:["Augmenter temperature","Désactiver KMS","Faire des sauvegardes","Automatiser la collecte de preuves de conformité (PCI DSS, HIPAA, RGPD, SOC 2, ISO 27001)"],a:3,e:"Audit Manager accélère la préparation d'audits.",s:"AWS Audit Manager"},
-  {i:'D5-011',d:5,df:'m',q:"Frameworks de conformité applicables à un usage gen AI :",o:["Aucun","Uniquement RGPD","Uniquement HIPAA","RGPD, HIPAA, SOC 2, ISO 27001, FedRAMP, PCI DSS, AI Act selon le contexte"],a:3,e:"Le contexte détermine les frameworks applicables.",s:"AWS Compliance"},
-  {i:'D5-012',d:5,df:'m',q:"Pour utiliser Bedrock avec des données HIPAA :",o:["Aucune précaution","Signer un BAA avec AWS + services HIPAA éligibles + config correcte (KMS, IAM, logs)","Désactiver KMS","Désactiver tout"],a:1,e:"BAA = prérequis légal. Bedrock est HIPAA-éligible depuis 2024.",s:"HIPAA et AWS"},
-  {i:'D5-013',d:5,df:'m',q:"Garde-fous au niveau organisation (politiques centralisées multi-comptes) :",o:["Un seul compte gigantesque","AWS Organizations + Service Control Policies (SCPs)","Désactiver IAM","Partager les credentials root"],a:1,e:"SCPs définissent les permissions max possibles dans les comptes.",s:"AWS Organizations"},
-  {i:'D5-014',d:5,df:'e',q:"Multi-Factor Authentication (MFA) :",o:["Augmente la latence","Désactive IAM","Désactive KMS","Renforce l'authentification avec un second facteur (token, app, hardware key)"],a:3,e:"MFA fortement recommandé pour tous IAM users, obligatoire pour root.",s:"AWS IAM"},
-  {i:'D5-015',d:5,df:'m',q:"Architecture sécurisée type pour gen AI avec données sensibles :",o:["Aucune mesure","Compresser et oublier","Désactiver tout","IAM least privilege + VPC private + PrivateLink + KMS CMK + Guardrails + CloudTrail + Macie + Audit Manager"],a:3,e:"Défense en profondeur : couches multiples pour une sécurité robuste.",s:"AWS Well-Architected"},
-];
 
 // ============================================================
 // CONFIG DOMAINES
@@ -304,7 +215,7 @@ export default function App() {
             timerEnabled={timerEnabled} setTimerEnabled={setTimerEnabled}
             timerDuration={timerDuration} setTimerDuration={setTimerDuration}
             startQuiz={startQuiz}
-            questionsCount={questions.length}
+            questions={questions} questionsCount={questions.length}
             showImport={() => setShowImport(true)}
           />
         )}
@@ -397,8 +308,13 @@ function ThemeToggle({ theme, setTheme, T }) {
 // ============================================================
 // HOME SCREEN
 // ============================================================
-function HomeScreen({ T, isDark, mode, setMode, numQuestions, setNumQuestions, selectedDomains, toggleDomain, timerEnabled, setTimerEnabled, timerDuration, setTimerDuration, startQuiz, questionsCount, showImport }) {
-  const availableCount = DEFAULT_QUESTIONS.filter(q => selectedDomains.includes(q.d)).length;
+function HomeScreen({ T, isDark, mode, setMode, numQuestions, setNumQuestions, selectedDomains, toggleDomain, timerEnabled, setTimerEnabled, timerDuration, setTimerDuration, startQuiz, questions, questionsCount, showImport }) {
+  const availableCount = questions.filter(q => selectedDomains.includes(q.d)).length;
+  const countByDomain = useMemo(() => {
+    const m = {};
+    questions.forEach(q => { m[q.d] = (m[q.d] || 0) + 1; });
+    return m;
+  }, [questions]);
   const canStart = selectedDomains.length > 0 && numQuestions > 0;
   const effectiveCount = Math.min(numQuestions, availableCount);
 
@@ -412,7 +328,7 @@ function HomeScreen({ T, isDark, mode, setMode, numQuestions, setNumQuestions, s
           marginBottom: '24px', fontSize: '11px', letterSpacing: '0.1em',
           textTransform: 'uppercase', fontFamily: FONT_MONO, color: T.accent
         }}>
-          <Sparkles size={11} /> AWS Certified · AIF-C01
+          <Sparkles size={11} /> AWS Certified · AIF-C02
         </div>
         <h1 style={{
           fontSize: 'clamp(48px, 8vw, 76px)', lineHeight: '1', margin: 0,
@@ -472,7 +388,7 @@ function HomeScreen({ T, isDark, mode, setMode, numQuestions, setNumQuestions, s
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '14px', fontWeight: 500 }}>{info.name}</div>
                     <div style={{ fontSize: '11px', color: T.textMuted, fontFamily: FONT_MONO, marginTop: '2px' }}>
-                      {info.short} · pondération {info.weight}
+                      {info.short} · pondération {info.weight} · {countByDomain[parseInt(d)] || 0} questions
                     </div>
                   </div>
                   {isActive && <CheckCircle2 size={16} color={info.color} />}
@@ -773,7 +689,7 @@ function ResultsScreen({ T, isDark, quiz, answers, results, resetAll }) {
     <div className="fade-in" style={{ paddingTop: '16px' }}>
       <div style={{ textAlign: 'center', marginBottom: '36px' }}>
         <div style={{ fontFamily: FONT_MONO, fontSize: '11px', letterSpacing: '0.1em', textTransform: 'uppercase', color: T.textMuted, marginBottom: '20px' }}>
-          · Résultats · AIF-C01 ·
+          · Résultats · AIF-C02 ·
         </div>
         <ScoreRing score={results.awsScore} color={verdictColor} T={T} />
         <div style={{ marginTop: '16px', fontSize: '15px', color: verdictColor, fontWeight: 500 }}>{verdictText}</div>
